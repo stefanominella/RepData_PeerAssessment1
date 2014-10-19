@@ -7,16 +7,94 @@ output:
 
 
 ## Loading and preprocessing the data
+First of all load the dataset and convert the data into convenient R data types.
+```{r, echo=TRUE}
+# load dataset
+activity.df <- read.csv("activity.csv"
+                            ,header=T
+                            ,sep=","
+                            ,na.string="NA"
+                            ,stringsAsFactors=F)
 
+# convert Date and numeric fields in Date/Integer R classes
+activity.df$steps <- as.integer(activity.df$steps)
+activity.df$date <- as.Date(activity.df$date,"%Y-%m-%d")
+activity.df$interval <- as.integer(activity.df$interval)
 
+```
+Next step, remove the NA rows from the initial dataset to perform a fist cut analysis
 
+```{r, echo=TRUE}
+# remove NAs from first cut data analysis
+activity.nona <- activity.df[complete.cases(activity.df),]
+
+```
+Next plot a histogram of the total number of steps taken each day
+and calculate and report the mean and median total number of steps taken per day
+
+```{r, echo=TRUE}
+# tot steps by date
+totsteps.by.date<-aggregate(activity.nona$steps, by=list(activity.nona$date), FUN=sum)
+names(totsteps.by.date)<-c("date","tot.steps")
+# plot total steps by date
+
+# open graphic device
+png(filename = "totstepsbydate.png", width = 480, height = 480, units = "px")
+
+# plot bar chart
+barplot(totsteps.by.date$tot.steps,names=totsteps.by.date$date,col="orangered3",xlab="Date",ylab="Tot. Steps")
+# set chart title
+title("Total number of steps by date")
+
+# median steps per day
+median.steps<-median(totsteps.by.date$tot.steps)
+abline(h = median.steps, col = "blue", lwd = 2)
+# mean steps per day
+mean.steps<-mean(totsteps.by.date$tot.steps)
+abline(h = mean.steps, col = "green", lwd = 2)
+
+legend("topleft",lty = c(1,1,1),col= c("blue","green"), legend=c("median","mean"))
+#close graphic device
+dev.off()
+
+```
 ## What is mean total number of steps taken per day?
+The mean and median total number of steps taken per day
+are 10766 and 10765 respectively.
 
+Next, investigate what is the average daily activity pattern
+by analyzing the 5-minute interval and the average number of steps taken, averaged across all days
+```{r, echo=TRUE}
+# avg steps by interval
+avgsteps.by.interval<-aggregate(activity.nona$steps, by=list(activity.nona$interval), FUN=mean)
+names(avgsteps.by.interval)<-c("interval","avg.steps")
 
+# open graphic device
+png(filename = "avgstepsbyinterval.png", width = 480, height = 480, units = "px")
+
+#plot chart
+with(avgsteps.by.interval,plot(interval,avg.steps
+                          ,type="l"
+                          ,xlab="5-minutes interval"
+                          ,ylab="Avg number of steps"))
+# set chart title
+title("Average number of steps by 5-minutes interval")
+#close graphic device
+dev.off()
+
+```
 
 ## What is the average daily activity pattern?
+Next, report that the 5-minute interval, on average across all the days in the dataset, that contains the maximum number of steps is
 
+```{r, echo=TRUE}
 
+# identify the interval with max number of steps (on average)
+top.interval<-avgsteps.by.interval[which.max(avgsteps.by.interval[,2]),]
+
+```
+interval avg.steps
+ 8:35     206.1698
 
 ## Imputing missing values
 
